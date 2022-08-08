@@ -1,3 +1,6 @@
+from tokenize import Number
+
+
 REGISTERS = ['$0', '$at',
              '$v0', '$v1', '$a0', '$a1', '$a2', '$a3',
              '$t0', '$t1', '$t2', '$t3', '$t4', '$t5', '$t6', '$t7',
@@ -48,19 +51,6 @@ J_TYPE = [
   'j',
   'jal'
 ]
-
-R_STRUCTURE = ['op', 'rs', 'rt', 'rd', 'shamt', 'funct']
-# R_STRUCTURE = {'op': '',
-#                'rs': '',
-#                'rt': '',
-#                'rd': '',
-#                'shamt': '',
-#                'funct': ''
-#               }
-
-I_STRUCTURE = ['op', 'rs', 'rt', 'immediate']
-
-J_STRUCTURE = ['op', 'address']
 
 STRUCTURES = {
   'R': ['op', 'rs', 'rt', 'rd', 'shamt', 'funct'],
@@ -116,7 +106,7 @@ R_FUNCTION_CODES = {
 def toHex(binaryString):
   binaryString = binaryString.replace(' ', '')
   binaryNumber = int(binaryString, 2)
-  return hex(binaryNumber)
+  return hex(binaryNumber)[2:]
 
 def exclude_comma(string):
   return string.replace(',', '')
@@ -128,13 +118,6 @@ def get_type(instruction):
   if name in I_TYPE:
     return 'I'
   return 'J'
-
-# def get_type_structure(type):
-#   if type == 'R':
-#     return R_STRUCTURE
-#   if type == 'I':
-#     return I_STRUCTURE
-#   return J_STRUCTURE
 
 def make_it_n_bits(binary, size):
   if len(binary) < size:
@@ -196,15 +179,6 @@ def get_immediate(instruction):
   binary = bin(instruction)[2:]
   return make_it_n_bits(binary, 16)
 
-# def mount_R_type(instruction):
-#   op = get_opcode(instruction)
-#   rs = get_rs(instruction)
-#   rt = get_rt(instruction)
-#   rd = get_rd(instruction)
-#   shamt = get_shamt(instruction)
-#   funct = get_funct(instruction)
-#   print(op, rs, rt, rd, shamt, funct)
-
 def mount_instruction(instruction):
   type = get_type(instruction)
   structure = STRUCTURES.get(type)
@@ -225,9 +199,30 @@ def mount_instruction(instruction):
     if field == 'immediate':
       x = get_immediate(instruction)
     binary_set.append(x)
-  print(' '.join(binary_set))
+  return binary_set
 
-instruction = 'add $t0, $s2, $t0'
+def convert_instruction_index(index):
+  index = toHex(bin(index))
+  index = make_it_n_bits(index, 8)
+  return index
 
-print(instruction)
-mount_instruction(instruction)
+def print_output(mounted_instruction, instruction_number):
+  legible_instruction = ''
+  for each_binary in mounted_instruction:
+    legible_instruction = legible_instruction + each_binary
+
+  legible_instruction = toHex(legible_instruction)
+  legible_instruction = make_it_n_bits(legible_instruction, 8)
+  instruction_number = convert_instruction_index(instruction_number)
+  print('{} : {};'.format(instruction_number, legible_instruction))
+
+def main():
+  file = open("teste.asm", "r")
+  file_lines = file.readlines()
+
+  for index, line in enumerate(file_lines):
+    mounted_instruction = mount_instruction(line)
+    print_output(mounted_instruction, index)
+
+
+main()
