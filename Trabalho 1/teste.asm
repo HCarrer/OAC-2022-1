@@ -1,3 +1,4 @@
+addi $t1, $t2, 1
 and $t1, $t2, $t3
 add $s1, $s2, $s3
 sub $t1, $t2, $t3
