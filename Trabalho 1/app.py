@@ -219,9 +219,7 @@ def get_immediate(instruction):
 
 def get_adress(instruction):
   binary = bin(int(instruction.split()[1]))[2:-2]
-  ans = make_it_n_bits(binary, 26)
-  print(ans)
-  return ans
+  return make_it_n_bits(binary, 26)
 
 def mount_instruction(instruction):
   type = get_type(instruction)
