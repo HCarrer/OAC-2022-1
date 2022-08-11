@@ -42,9 +42,27 @@ I_TYPE = [
   'addi',
   'addiu',
   'andi',
+  'beq',
+  'bgez',
+  'bgtz',
+  'blez',
+  'bltz',
+  'bne',
+  'lb',
+  'lbu',
+  'lh',
+  'lhu',
+  'lui',
+  'lw',
+  'lwcl',
   'ori',
+  'sb',
   'slti',
   'sltiu',
+  'sh',
+  'sw',
+  'swcl',
+  'xori'
 ]
 
 J_TYPE = [
@@ -61,14 +79,34 @@ STRUCTURES = {
 OPCODES = {
   'R': '000000',
   'I': {
-    'addi': '001000',
-    'addiu': '001001',
-    'andi': '001100',
-    'beq': '000100',
-    'bgez': '000001',
-    'bgtz': '000111',
-    'blez': '000110',
-    'bltz': '000001',
+      'addi': '001000',
+      'addiu': '001001',
+      'andi': '001100',
+      'beq': '000100',
+      'bgez': '000001',
+      'bgtz': '000111',
+      'blez': '000110',
+      'bltz': '000001',
+      'bne': '000101',
+      'lb': '100000',
+      'lbu': '100100',
+      'lh': '100001',
+      'lhu': '100101',
+      'lui': '001111',
+      'lw': '100011',
+      'lwc1': '110001',
+      'ori': '001101',
+      'sb': '101000',
+      'slti': '001010',
+      'sltiu': '001011',
+      'sh': '101001',
+      'sw': '101011',
+      'swc1': '111001',
+      'xori': '001110'
+  },
+  'J': {
+    'j' : '000010',
+    'jal' : '000011'
   }
 }
 
@@ -137,7 +175,7 @@ def get_opcode(instruction):
   name = instruction.split()[0]
   if type == 'R':
     return OPCODES['R']
-  return OPCODES[name]
+  return OPCODES[type][name]
   
 def get_rs(instruction):
   type = get_type(instruction)
@@ -176,7 +214,7 @@ def get_funct(instruction):
     return R_FUNCTION_CODES[command]
 
 def get_immediate(instruction):
-  binary = bin(instruction)[2:]
+  binary = bin(int(instruction.split()[-1]))[2:]
   return make_it_n_bits(binary, 16)
 
 def mount_instruction(instruction):
@@ -210,7 +248,6 @@ def print_output(mounted_instruction, instruction_number):
   legible_instruction = ''
   for each_binary in mounted_instruction:
     legible_instruction = legible_instruction + each_binary
-
   legible_instruction = toHex(legible_instruction)
   legible_instruction = make_it_n_bits(legible_instruction, 8)
   instruction_number = convert_instruction_index(instruction_number)
