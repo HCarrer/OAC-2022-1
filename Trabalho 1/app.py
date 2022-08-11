@@ -217,6 +217,12 @@ def get_immediate(instruction):
   binary = bin(int(instruction.split()[-1]))[2:]
   return make_it_n_bits(binary, 16)
 
+def get_adress(instruction):
+  binary = bin(int(instruction.split()[1]))[2:-2]
+  ans = make_it_n_bits(binary, 26)
+  print(ans)
+  return ans
+
 def mount_instruction(instruction):
   type = get_type(instruction)
   structure = STRUCTURES.get(type)
@@ -236,6 +242,8 @@ def mount_instruction(instruction):
       x = get_funct(instruction)
     if field == 'immediate':
       x = get_immediate(instruction)
+    if field == 'address':
+      x = get_adress(instruction)
     binary_set.append(x)
   return binary_set
 
@@ -260,6 +268,5 @@ def main():
   for index, line in enumerate(file_lines):
     mounted_instruction = mount_instruction(line)
     print_output(mounted_instruction, index)
-
 
 main()
