@@ -1,7 +1,7 @@
 from tokenize import Number
 
 
-REGISTERS = ['$0', '$at',
+REGISTERS = ['$zero', '$at',
              '$v0', '$v1', '$a0', '$a1', '$a2', '$a3',
              '$t0', '$t1', '$t2', '$t3', '$t4', '$t5', '$t6', '$t7',
              '$s0', '$s1', '$s2', '$s3', '$s4', '$s5', '$s6', '$s7',
@@ -178,11 +178,15 @@ def get_opcode(instruction):
   return OPCODES[type][name]
   
 def get_rs(instruction):
+  name = instruction.split()[0]
   type = get_type(instruction)
   if type == 'R':
     rs = instruction.split()[2]
   if type == 'I':
-    rs = instruction.split()[2]
+    if name == 'lw' or name == 'sw':
+      rs = instruction.split()[2][-4:-1]
+    else:
+      rs = instruction.split()[2]
   rs = exclude_comma(rs)
   return get_register(rs)
 
@@ -198,7 +202,7 @@ def get_rt(instruction):
   if type == 'R':
     rt = instruction.split()[3]
   if type == 'I':
-    rt = instruction.split()[1]
+      rt = instruction.split()[1]
   rt = exclude_comma(rt)
   return get_register(rt)
 
@@ -214,10 +218,14 @@ def get_funct(instruction):
     return R_FUNCTION_CODES[command]
 
 def get_immediate(instruction):
-  binary = bin(int(instruction.split()[-1]))[2:]
+  name = instruction.split()[0]
+  if name == 'lw' or name == 'sw':
+    binary = bin(int((instruction.split()[-1])[:-5]))[2:]
+  else:
+    binary = bin(int(instruction.split()[-1]))[2:]
   return make_it_n_bits(binary, 16)
 
-def get_adress(instruction):
+def get_address(instruction):
   binary = bin(int(instruction.split()[1]))[2:-2]
   return make_it_n_bits(binary, 26)
 
@@ -241,7 +249,7 @@ def mount_instruction(instruction):
     if field == 'immediate':
       x = get_immediate(instruction)
     if field == 'address':
-      x = get_adress(instruction)
+      x = get_address(instruction)
     binary_set.append(x)
   return binary_set
 
@@ -250,7 +258,7 @@ def convert_instruction_index(index):
   index = make_it_n_bits(index, 8)
   return index
 
-def print_output(mounted_instruction, instruction_number):
+def print_instructions(mounted_instruction, instruction_number):
   legible_instruction = ''
   for each_binary in mounted_instruction:
     legible_instruction = legible_instruction + each_binary
@@ -263,8 +271,13 @@ def main():
   file = open("teste.asm", "r")
   file_lines = file.readlines()
 
+  print(file_lines)
+
+  list_of_instructions = map(mount_instruction, file_lines)
+  print(list(list_of_instructions))
+
   for index, line in enumerate(file_lines):
     mounted_instruction = mount_instruction(line)
-    print_output(mounted_instruction, index)
+    print_instructions(mounted_instruction, index)
 
 main()
