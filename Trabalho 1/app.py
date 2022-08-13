@@ -141,6 +141,8 @@ R_FUNCTION_CODES = {
   'xor': '100110',
 }
 
+specials = ['lw', 'sw', 'lb', 'sb']
+
 def toHex(binaryString):
   binaryString = binaryString.replace(' ', '')
   binaryNumber = int(binaryString, 2)
@@ -183,7 +185,7 @@ def get_rs(instruction):
   if type == 'R':
     rs = instruction.split()[2]
   if type == 'I':
-    if name == 'lw' or name == 'sw':
+    if name in specials:
       rs = instruction.split()[2][-4:-1]
     else:
       rs = instruction.split()[2]
@@ -219,7 +221,7 @@ def get_funct(instruction):
 
 def get_immediate(instruction):
   name = instruction.split()[0]
-  if name == 'lw' or name == 'sw':
+  if name in specials:
     binary = bin(int((instruction.split()[-1])[:-5]))[2:]
   else:
     binary = bin(int(instruction.split()[-1]))[2:]
