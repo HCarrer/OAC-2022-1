@@ -262,26 +262,102 @@ def convert_instruction_index(index):
   index = make_it_n_bits(index, 8)
   return index
 
-def print_instructions(mounted_instruction, instruction_number):
+def print_instructions(mounted_instruction, index, line):
   legible_instruction = ''
   for each_binary in mounted_instruction:
     legible_instruction = legible_instruction + each_binary
   legible_instruction = toHex(legible_instruction)
   legible_instruction = make_it_n_bits(legible_instruction, 8)
-  instruction_number = convert_instruction_index(instruction_number)
-  print('{} : {};'.format(instruction_number, legible_instruction))
+  instruction_number = convert_instruction_index(index)
+  output_line = "{} : {}; {}: {}".format(instruction_number, legible_instruction, index, line)
+
+  return output_line
+
+def print_data(line, line_index, reference_index=0):
+  name = ''
+  data_type = ''
+  data = ''
+  final_line = ''
+  all_data = []
+  hex_data = ''
+  inner_index = reference_index
+  for index, content in enumerate(line.split()):
+    if index == 0:
+      name = line.split()[0]
+      name = name[:-1]
+    elif index == 1:
+      data_type = line.split()[1]
+    else: 
+      data = line.split()[index]
+      if data[-1] == ',':
+        data = data[:-1]
+      if data[:2] == '0x':
+        data = data[2:]
+      else:
+        int_data = int(data)
+        data = hex(int_data)[2:]
+      str_inner_index = str(inner_index)
+      final_line = '{} : {};\n'.format(make_it_n_bits(str_inner_index, 8), make_it_n_bits(data, 8))
+      inner_index = inner_index + 1
+      all_data.append(final_line)
+  return all_data, inner_index
 
 def main():
-  file = open("teste.asm", "r")
-  file_lines = file.readlines()
-
-  print(file_lines)
+  input_file = open("example_saida.asm", "r")
+  file_lines = input_file.readlines()
 
   list_of_instructions = map(mount_instruction, file_lines)
-  print(list(list_of_instructions))
 
-  for index, line in enumerate(file_lines):
-    mounted_instruction = mount_instruction(line)
-    print_instructions(mounted_instruction, index)
+  file_text = open("example_saida_text.mif", "w")
+  file_data = open("example_saida_data.mif", "w")
+
+  file_text.write("""DEPTH = 16384;
+WIDTH = 32;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+CONTENT
+BEGIN\n\n""")
+  file_data.write("""DEPTH = 16384;
+WIDTH = 32;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+CONTENT
+BEGIN\n\n""")
+
+  output_file = file_data
+  index = 0
+  data_index = 0
+
+  for line in file_lines:
+    if line == '\n':
+      continue
+
+    if line.split()[0] == '.data':
+      continue
+
+    if line.split()[0] == '.text':
+      index = 0
+      output_file.write('\nEND;')
+      output_file = file_text
+      continue
+
+    if output_file == file_data:
+      str_index = str(index)
+      all_data, data_index = print_data(line, index, data_index)
+      for each_data in all_data:
+        output_file.write(each_data)
+      index += 1
+      continue
+
+    try:
+      mounted_instruction = mount_instruction(line)
+      output_line = print_instructions(mounted_instruction, index, line)
+      index += 1
+      output_file.write(output_line)
+    except:
+      index += 1
+      output_file.write('Instrução não implementada: {}'.format(line))
+
+  output_file.write('\nEND;')
 
 main()
