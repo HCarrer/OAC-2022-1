@@ -145,6 +145,8 @@ R_FUNCTION_CODES = {
 
 specials = ['lw', 'sw', 'lb', 'sb']
 
+labels = []
+
 def toHex(binaryString):
   binaryString = binaryString.replace(' ', '')
   binaryNumber = int(binaryString, 2)
@@ -230,10 +232,19 @@ def get_immediate(instruction):
   return make_it_n_bits(binary, 16)
 
 def get_address(instruction):
+  word = instruction.split()[1]
+  for label in labels:
+    if(label[0] == word):
+      return make_it_n_bits(bin(int(label[1])*4)[2:-2], 16)
   binary = bin(int(instruction.split()[1]))[2:-2]
   return make_it_n_bits(binary, 26)
 
 def mount_instruction(instruction):
+  global counter
+  ins = instruction.strip()
+  if (ins[-1] == ':'):
+    # labels.append((ins[:-1], counter))
+    return
   type = get_type(instruction)
   structure = STRUCTURES.get(type)
   binary_set = []
@@ -255,6 +266,7 @@ def mount_instruction(instruction):
     if field == 'address':
       x = get_address(instruction)
     binary_set.append(x)
+  counter += 1
   return binary_set
 
 def convert_instruction_index(index):
@@ -277,11 +289,22 @@ def main():
 
   print(file_lines)
 
-  list_of_instructions = map(mount_instruction, file_lines)
-  print(list(list_of_instructions))
+  index = 0
+  for jumps in file_lines:
+    if jumps.strip()[-1] == ':':
+      labels.append((jumps[:-1], index+1))
+    index += 1
+  
+  print(labels)
 
-  for index, line in enumerate(file_lines):
+  index = 0
+  for line in file_lines:
     mounted_instruction = mount_instruction(line)
+    if mounted_instruction == None:
+      continue
     print_instructions(mounted_instruction, index)
+    index += 1
+  
 
+counter = 0
 main()
