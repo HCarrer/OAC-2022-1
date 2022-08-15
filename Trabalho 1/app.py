@@ -235,7 +235,7 @@ def get_address(instruction):
   word = instruction.split()[1]
   for label in labels:
     if(label[0] == word):
-      return make_it_n_bits(bin(int(label[1])*4)[2:-2], 16)
+      return make_it_n_bits(bin(int(label[1]))[2:], 26)
   binary = bin(int(instruction.split()[1]))[2:-2]
   return make_it_n_bits(binary, 26)
 
@@ -278,6 +278,7 @@ def print_instructions(mounted_instruction, instruction_number):
   legible_instruction = ''
   for each_binary in mounted_instruction:
     legible_instruction = legible_instruction + each_binary
+  print (legible_instruction)
   legible_instruction = toHex(legible_instruction)
   legible_instruction = make_it_n_bits(legible_instruction, 8)
   instruction_number = convert_instruction_index(instruction_number)
